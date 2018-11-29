@@ -4,10 +4,14 @@ import React, {
 import './App.css';
 
 const supportedAudioFeatures = [
-    "danceability", "energy", "key", "loudness", "mode", "speechiness",
-    "acousticness", "instrumentalness", "liveness", "valence",
-    "tempo", "time_signature"
+    "acousticness", "danceability", "energy", "instrumentalness",
+    "liveness", "speechiness", "valence",
 ];
+
+// For Reference:
+// const unsupportedAudioFeatures = [
+//     "loudness", "mode", "tempo", "time_signature"
+// ]
 
 const filterObjectKeys = function(obj, keysToKeep){
     const filtered = Object.keys(obj)
@@ -37,7 +41,7 @@ class FeatureSlider extends Component {
                     onInput={this.props.handleInput}
                     value={this.props.value}
                 />
-                <span>     {fName}</span>
+                <span>   Value: {this.props.value} --  {fName}</span>
             </div>
         )
     }
@@ -74,6 +78,7 @@ class TrackCard extends Component {
 class App extends Component {
     constructor(props) {
         super(props);
+
         this.state = {
             recommendations: [],
             featureValues: supportedAudioFeatures.reduce((o, key) => ({
@@ -108,8 +113,9 @@ class App extends Component {
     componentDidMount() {
         this.callApi()
             .then(res => {
+                const recommendations = this.scoreRecommendations(res.recommendations, this.state.featureValues)
                 this.setState({
-                    recommendations: this.scoreRecommendations(res.recommendations, this.state.featureValues)
+                    recommendations: recommendations,
                 })
             })
             .catch(err => console.log(err));
@@ -139,7 +145,6 @@ class App extends Component {
             recommendations: recommendations 
         })
     }
-
 
     render() {
         const tracks = this.state.recommendations
