@@ -42,6 +42,7 @@ class TrackCard extends Component {
                 <div>albumName: {relaventTrackInfo.albumName}</div>
                 <div>artistNames: {relaventTrackInfo.artistNames}</div>
                 <div>audioFeatures: <pre><code>{audioFeaturesString}</code></pre></div>
+                <div>trackScore: {trackInfo[2]}</div>
                 
             </div>
         )
@@ -52,13 +53,33 @@ class TrackCard extends Component {
 class App extends Component {
     state = {
         recommendations: [],
+        featureValues: supportedAudioFeatures.reduce((o, key) => ({
+            ...o, [key]: 0.5
+        }), {})
     };
+
+    scoreRec(rec){
+        /* Implemented as euclidean distance from slider state */
+        const squaredScore = supportedAudioFeatures
+            .map(f => (this.state.featureValues[f] - rec[f])**2)
+            .reduce((a,b) => a + b, 0);
+
+        const score = Math.sqrt(squaredScore);
+
+        return score
+    }
+
+    scoreRecommendations(recs){
+        return recs.map(([trackI, audioF]) => [trackI, audioF, this.scoreRec(audioF)]);
+    }
 
     componentDidMount() {
         this.callApi()
-            .then(res => this.setState({
-                recommendations: res.recommendations
-            }))
+            .then(res => {
+                this.setState({
+                    recommendations: this.scoreRecommendations(res.recommendations)
+                })
+            })
             .catch(err => console.log(err));
     }
 
@@ -70,12 +91,12 @@ class App extends Component {
     };
 
     render() {
-        const tracks = this.state.recommendations.map((track) =>{
+        const tracks = this.state.recommendations
+            .sort((t1, t2) => t2[2] - t1[2])
+            .map((track) => (
+                <li key={track[0].id} className="track-card-container"><TrackCard trackInfo={track} /></li>
+            ));
 
-            return (
-                <li className="track-card-container"><TrackCard trackInfo={track} /></li>
-            )
-        });
 
         return (
             <div className="App">
