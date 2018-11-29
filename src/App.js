@@ -34,14 +34,15 @@ class FeatureSlider extends Component {
             <div>
                 <input 
                     type="range"
-                    name={fName}
-                    id={fName + "-slider"} min="0" max="1" 
+                    name={fName+"-"+this.props.type}
+                    min={this.props.min ? this.props.min : 0} 
+                    max={this.props.max ? this.props.max : 1}
                     step="0.05" 
                     onChange={this.props.handleChange}
                     onInput={this.props.handleInput}
                     value={this.props.value}
                 />
-                <span>   Value: {this.props.value} --  {fName}</span>
+                <span>   {this.props.type}: {this.props.value} --  {fName}</span>
             </div>
         )
     }
@@ -82,7 +83,7 @@ class App extends Component {
         this.state = {
             recommendations: [],
             featureValues: supportedAudioFeatures.reduce((o, key) => ({
-                ...o, [key]: 0.5
+                ...o, [key]: {weight:0, value:0.5}
             }), {})
         };
         this.handleChangeFeatureSlider = this.handleChangeFeatureSlider.bind(this);
@@ -97,8 +98,9 @@ class App extends Component {
          *       medium value that it can take
          * TODO: implement feature weights.
          * */
+        console.log(featureValues);
         const squaredScore = supportedAudioFeatures
-            .map(f => (featureValues[f] - rec[f])**2)
+            .map(f => (10**(10*featureValues[f]['weight']) * (featureValues[f]['value'] - rec[f])**2))
             .reduce((a,b) => a + b, 0);
 
         const score = Math.sqrt(squaredScore);
@@ -130,16 +132,19 @@ class App extends Component {
 
     handleChangeFeatureSlider(event){
         const name = event.target.name;
+        const [featureName, sliderType] = name.split("-");
+
         const value = parseFloat(event.target.value);
 
         let featureValues = {...this.state.featureValues};
-        featureValues[name] = value;
+        featureValues[featureName][sliderType] = value;
 
         this.setState({featureValues: featureValues});
     }
 
     handleInputFeatureSlider(event){
-        const recommendations = this.scoreRecommendations(this.state.recommendations, this.state.featureValues);
+        const recommendations = this.scoreRecommendations(this.state.recommendations, this.state.featureValues)
+            .sort((t1, t2) => t1[2] - t2[2]);
 
         this.setState({
             recommendations: recommendations 
@@ -148,7 +153,6 @@ class App extends Component {
 
     render() {
         const tracks = this.state.recommendations
-            .sort((t1, t2) => t2[2] - t1[2])
             .map((track) => (
                 <li key={track[0].id} className="track-card-container">
                     <TrackCard trackInfo={track} />
@@ -157,17 +161,31 @@ class App extends Component {
 
         const sliders = supportedAudioFeatures
             .map(fName => (
-                <FeatureSlider 
-                    featureName={fName} 
-                    key={fName}
-                    handleInput={this.handleInputFeatureSlider}
-                    handleChange={this.handleChangeFeatureSlider}
-                    value={this.state.featureValues[fName]}
-                />
+                <div className="feature-sliders-container" key={fName}>
+                    <FeatureSlider 
+                        featureName={fName} 
+                        handleInput={this.handleInputFeatureSlider}
+                        handleChange={this.handleChangeFeatureSlider}
+                        value={this.state.featureValues[fName]['weight']}
+                        min={-1}
+                        max={1}
+                        type="weight"
+                    />
+                    <FeatureSlider 
+                        featureName={fName} 
+                        handleInput={this.handleInputFeatureSlider}
+                        handleChange={this.handleChangeFeatureSlider}
+                        value={this.state.featureValues[fName]["value"]}
+                        type="value"
+                    />
+                </div>
             ));
 
         return (
             <div className="App">
+                <h1>Audio Features Explorer</h1>
+                <p><strong>Weights</strong> allow you to adjust the importance of a audio feature.</p>
+                <p><strong>Values</strong> allow you to adjust the ideal audio feature value.</p>
                 <div className="audio-feature-sliders">
                     {sliders}
                 </div>

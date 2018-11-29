@@ -35,3 +35,7 @@
 .audio-feature-sliders {
     padding: 10px;
 }
+
+.feature-sliders-container {
+    border-style: solid;
+}
