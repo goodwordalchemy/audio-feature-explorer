@@ -51,15 +51,13 @@ class TrackCard extends Component {
 
 class App extends Component {
     state = {
-        response: [],
-        post: '',
-        responseToPost: '',
+        recommendations: [],
     };
 
     componentDidMount() {
         this.callApi()
             .then(res => this.setState({
-                response: res.recommendations
+                recommendations: res.recommendations
             }))
             .catch(err => console.log(err));
     }
@@ -71,25 +69,8 @@ class App extends Component {
         return body;
     };
 
-    handleSubmit = async e => {
-        e.preventDefault();
-        const response = await fetch('/api/world', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                post: this.state.post
-            }),
-        });
-        const body = await response.text();
-        this.setState({
-            responseToPost: body
-        });
-    };
-
     render() {
-        const tracks = this.state.response.map((track) =>{
+        const tracks = this.state.recommendations.map((track) =>{
 
             return (
                 <li className="track-card-container"><TrackCard trackInfo={track} /></li>
