@@ -91,14 +91,6 @@ class App extends Component {
     }
 
     scoreRec(rec, featureValues){
-        /* 
-         * Implemented as euclidean distance from slider state 
-         * TODO: This need to check the similarity not to the slider, but to the slider
-         *       multiplied by either the average value for the field or the
-         *       medium value that it can take
-         * TODO: implement feature weights.
-         * */
-        console.log(featureValues);
         const squaredScore = supportedAudioFeatures
             .map(f => (10**(10*featureValues[f]['weight']) * (featureValues[f]['value'] - rec[f])**2))
             .reduce((a,b) => a + b, 0);
