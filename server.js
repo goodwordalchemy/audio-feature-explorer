@@ -25,11 +25,5 @@ app.get('/api/recommendations', (req, res) => {
         recommendations: getSampleRecommendations()
     });
 });
-app.post('/api/world', (req, res) => {
-    console.log(req.body);
-    res.send(
-        `I received your POST request. This is what you sent me: ${req.body.post}`,
-    );
-});
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
