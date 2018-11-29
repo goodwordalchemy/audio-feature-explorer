@@ -5,7 +5,7 @@ import './App.css';
 
 class App extends Component {
     state = {
-        response: '',
+        response: [],
         post: '',
         responseToPost: '',
     };
@@ -13,7 +13,7 @@ class App extends Component {
     componentDidMount() {
         this.callApi()
             .then(res => this.setState({
-                response: JSON.stringify(res.recommendations)
+                response: res.recommendations
             }))
             .catch(err => console.log(err));
     }
@@ -43,9 +43,19 @@ class App extends Component {
     };
 
     render() {
+        const tracks = this.state.response.map((track) =>{
+            const trackString = JSON.stringify(track);
+
+            return (
+                <li className="track-card">{trackString}</li>
+            )
+        });
+
         return (
             <div className="App">
-        <p>{this.state.response}</p>
+                <ul>
+                    {tracks}
+                </ul>
         <form onSubmit={this.handleSubmit}>
           <p>
             <strong>Post to Server:</strong>

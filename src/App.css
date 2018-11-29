@@ -30,3 +30,7 @@
     transform: rotate(360deg);
   }
 }
+
+.track-card {
+    border-style: solid;
+}
